@@ -1,0 +1,19 @@
+[package]
+name = "quote-server"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+quote-core = { path = "../quote-core" }
+
+rand = { workspace = true }
+crossbeam-channel = { workspace = true }
+
+anyhow = { workspace = true }
+ctrlc = { workspace = true }
+
+log = { workspace = true }
+env_logger = { workspace = true }
+
+serde = { workspace = true }
+postcard = { workspace = true }
