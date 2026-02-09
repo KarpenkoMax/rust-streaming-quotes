@@ -176,7 +176,7 @@ AAPL
         impl Read for FailingReader {
             fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
                 if self.read_total >= self.fail_after {
-                    return Err(io::Error::new(io::ErrorKind::Other, "boom"));
+                    return Err(io::Error::other("boom"));
                 }
 
                 let remaining_before_fail = self.fail_after - self.read_total;

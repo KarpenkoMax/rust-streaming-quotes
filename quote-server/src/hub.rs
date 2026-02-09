@@ -142,14 +142,14 @@ mod tests {
         let hub = Hub::new();
 
         // нет такого клиента
-        assert_eq!(hub.remove_client(42), false);
+        assert!(!hub.remove_client(42));
 
         // добавили -> удалили
         let _rx = hub.add_client(42).unwrap();
-        assert_eq!(hub.remove_client(42), true);
+        assert!(hub.remove_client(42));
 
         // уже удалён
-        assert_eq!(hub.remove_client(42), false);
+        assert!(!hub.remove_client(42));
     }
 
     #[test]
@@ -206,6 +206,6 @@ mod tests {
         assert_eq!(st.dropped_dead, 1);
 
         // После broadcast хаб должен почистить реестр
-        assert_eq!(hub.remove_client(1), false);
+        assert!(!hub.remove_client(1));
     }
 }
