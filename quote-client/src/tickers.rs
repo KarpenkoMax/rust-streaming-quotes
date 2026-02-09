@@ -41,12 +41,11 @@ pub(crate) fn load_tickers(args: &Args) -> Result<Vec<String>> {
 fn load_from_file(path: impl AsRef<Path>) -> Result<Vec<String>> {
     let path = path.as_ref().to_path_buf();
 
-    let tickers = quote_core::tickers::read_tickers_from_path(&path).map_err(|e| {
-        TickersError::ReadFile {
+    let tickers =
+        quote_core::tickers::read_tickers_from_path(&path).map_err(|e| TickersError::ReadFile {
             path: path.clone(),
             source: e,
-        }
-    })?;
+        })?;
 
     if tickers.is_empty() {
         return Err(TickersError::EmptyFromFile { path });

@@ -1,6 +1,6 @@
-use std::net::SocketAddr;
 use crate::error::ProtocolError;
 use crate::tickers::parse_tickers_csv;
+use std::net::SocketAddr;
 
 /// Команды, принимаемые сервером
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,7 +48,10 @@ pub fn parse_command(line: &str) -> Result<Command, ProtocolError> {
                 return Err(ProtocolError::EmptyTickers);
             }
 
-            Ok(Command::Stream { udp_target, tickers })
+            Ok(Command::Stream {
+                udp_target,
+                tickers,
+            })
         }
         other => Err(ProtocolError::UnknownCommand(other.to_string())),
     }
@@ -126,9 +129,7 @@ mod tests {
     #[test]
     fn parse_invalid_udp_address() {
         let err = parse_command("STREAM udp://127.0.0.1:notaport AAPL").unwrap_err();
-        assert!(
-            matches!(err, ProtocolError::InvalidUdpAddress(s) if s == "127.0.0.1:notaport")
-        );
+        assert!(matches!(err, ProtocolError::InvalidUdpAddress(s) if s == "127.0.0.1:notaport"));
     }
 
     #[test]

@@ -1,7 +1,7 @@
-use std::path::PathBuf;
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+use std::path::PathBuf;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{ArgGroup, Parser};
 
 /// Quote Client - подписка на котировки через quote-server.
@@ -81,9 +81,8 @@ impl Args {
 
     pub(crate) fn server_socket_addr(&self) -> std::io::Result<SocketAddr> {
         // Берём первый результат резолвинга
-        self.server
-            .to_socket_addrs()?
-            .next()
-            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "no addresses resolved"))
+        self.server.to_socket_addrs()?.next().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::NotFound, "no addresses resolved")
+        })
     }
 }

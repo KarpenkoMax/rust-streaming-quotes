@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use log::{debug, warn};
 
-use quote_core::wire::{decode, UdpPacketV1};
+use quote_core::wire::{UdpPacketV1, decode};
 
 pub(crate) type LastPingMap = Arc<RwLock<HashMap<SocketAddr, Instant>>>;
 
@@ -19,7 +19,6 @@ pub(crate) fn run_udp_ping_listener(
     last_ping: LastPingMap,
     shutdown: Arc<std::sync::atomic::AtomicBool>,
 ) -> anyhow::Result<()> {
-    
     udp.set_read_timeout(Some(Duration::from_millis(200)))?;
 
     let mut buf = vec![0u8; 2048];
@@ -50,8 +49,9 @@ pub(crate) fn run_udp_ping_listener(
                     }
                 }
             }
-            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock
-                || e.kind() == std::io::ErrorKind::TimedOut =>
+            Err(e)
+                if e.kind() == std::io::ErrorKind::WouldBlock
+                    || e.kind() == std::io::ErrorKind::TimedOut =>
             {
                 // тик: просто проверим shutdown и продолжим
             }

@@ -7,16 +7,16 @@
 //! - запуск TCP-listener: `STREAM` и создание сессии на клиента
 //! - при shutdown: корректное завершение и `join` фоновых потоков
 
+use clap::Parser;
+use log::{info, warn};
 use std::collections::HashMap;
 use std::io::Cursor;
 use std::net::UdpSocket;
 use std::sync::{
-    atomic::{AtomicBool, AtomicU64, Ordering},
     Arc, RwLock,
+    atomic::{AtomicBool, AtomicU64, Ordering},
 };
 use std::thread;
-use clap::Parser;
-use log::{info, warn};
 
 mod cli;
 mod config;
@@ -28,7 +28,7 @@ mod udp_ping;
 
 use crate::cli::Args;
 use crate::hub::Hub;
-use crate::udp_ping::{run_udp_ping_listener, LastPingMap};
+use crate::udp_ping::{LastPingMap, run_udp_ping_listener};
 
 fn main() -> anyhow::Result<()> {
     env_logger::init();

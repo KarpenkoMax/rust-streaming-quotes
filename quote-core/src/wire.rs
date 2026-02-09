@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::StockQuote;
 use crate::error::WireError;
+use crate::types::StockQuote;
 
 /// Версия протокола
 pub const WIRE_VERSION: u8 = 1;
@@ -32,7 +32,6 @@ pub fn decode(buf: &[u8]) -> Result<UdpPacketV1, WireError> {
     let pkt = postcard::from_bytes(payload)?;
     Ok(pkt)
 }
-
 
 #[cfg(test)]
 mod tests {

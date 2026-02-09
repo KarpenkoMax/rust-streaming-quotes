@@ -3,7 +3,6 @@ use std::io::Cursor;
 use std::path::PathBuf;
 use std::time::Duration;
 
-
 const DEFAULT_TICKERS: &str = include_str!("../assets/tickers.txt");
 
 pub(crate) const UDP_SOCKET_TICK: Duration = Duration::from_millis(10);

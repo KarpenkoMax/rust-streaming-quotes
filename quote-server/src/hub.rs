@@ -1,12 +1,12 @@
+use crate::config::ClientId;
+use crossbeam_channel::{Receiver, Sender, TrySendError};
+use quote_core::StockQuote;
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::fmt;
+use std::sync::Arc;
 use std::sync::Mutex;
 use thiserror::Error;
-use crate::config::ClientId;
-use crossbeam_channel::{Sender, Receiver, TrySendError};
-use std::sync::Arc;
-use std::fmt;
-use quote_core::StockQuote;
 
 #[derive(Debug, Error)]
 pub(crate) enum HubError {
@@ -18,7 +18,7 @@ pub(crate) enum HubError {
 pub(crate) struct BroadcastStats {
     sent: usize,
     dropped_full: usize,
-    dropped_dead: usize
+    dropped_dead: usize,
 }
 
 impl fmt::Display for BroadcastStats {
@@ -54,7 +54,6 @@ impl Hub {
     }
 
     pub(crate) fn add_client(&self, cid: ClientId) -> Result<Receiver<Arc<StockQuote>>, HubError> {
-
         let mut clients = match self.clients.lock() {
             Ok(g) => g,
             Err(poisoned) => poisoned.into_inner(), // продолжаем, несмотря на poison
@@ -65,8 +64,8 @@ impl Hub {
                 let (tx, rx) = crossbeam_channel::bounded(self.capacity_per_client);
                 e.insert(tx);
                 Ok(rx)
-            },
-            Entry::Occupied(_) => Err(HubError::ClientAlreadyExists(cid))
+            }
+            Entry::Occupied(_) => Err(HubError::ClientAlreadyExists(cid)),
         }
     }
 
@@ -165,7 +164,9 @@ mod tests {
         assert_eq!(st.dropped_full, 0);
         assert_eq!(st.dropped_dead, 0);
 
-        let got = rx.recv_timeout(Duration::from_millis(200)).expect("should receive quote");
+        let got = rx
+            .recv_timeout(Duration::from_millis(200))
+            .expect("should receive quote");
         assert_eq!(*got, q);
     }
 

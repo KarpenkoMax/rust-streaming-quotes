@@ -8,14 +8,14 @@
 //! - корректная остановка по `Ctrl+C`
 
 mod cli;
-mod tickers;
 mod tcp;
+mod tickers;
 mod udp;
 use std::net::SocketAddr;
 use std::sync::{Arc, atomic::AtomicBool, atomic::Ordering};
 
 use clap::Parser;
-use log::{info};
+use log::info;
 
 fn main() -> anyhow::Result<()> {
     // Логи через RUST_LOG=info/trace
@@ -35,8 +35,7 @@ fn main() -> anyhow::Result<()> {
     let args = cli::Args::parse();
     args.validate()?; // оставляем как есть, если validate() у тебя на anyhow::Result
 
-    let tickers = tickers::load_tickers(&args)
-        .map_err(|e| anyhow::anyhow!(e))?;
+    let tickers = tickers::load_tickers(&args).map_err(|e| anyhow::anyhow!(e))?;
 
     info!(
         "Starting quote-client: server_tcp={}, udp_port={}, advertise_ip={}, tickers={}",
@@ -47,10 +46,14 @@ fn main() -> anyhow::Result<()> {
     );
 
     let udp_advertise_addr = SocketAddr::new(args.advertise_ip(), args.udp_port);
-    let udp_bind_addr = SocketAddr::from(([0, 0, 0, 0], args.udp_port));    
+    let udp_bind_addr = SocketAddr::from(([0, 0, 0, 0], args.udp_port));
 
     // запрос на стрим
-    tcp::send_stream_command(args.server_socket_addr()?, udp_advertise_addr, tickers.as_slice())?;
+    tcp::send_stream_command(
+        args.server_socket_addr()?,
+        udp_advertise_addr,
+        tickers.as_slice(),
+    )?;
 
     udp::run_udp_receiver(udp_bind_addr, shutdown)?;
 

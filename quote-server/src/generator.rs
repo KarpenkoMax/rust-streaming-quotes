@@ -1,7 +1,7 @@
+use quote_core::StockQuote;
+use rand::Rng;
 use std::collections::{HashMap, HashSet};
 use std::time::{SystemTime, UNIX_EPOCH};
-use rand::Rng;
-use quote_core::{StockQuote};
 
 #[derive(Debug, Clone)]
 pub(crate) struct GeneratorConfig {
@@ -38,23 +38,24 @@ impl QuoteGenerator {
     pub(crate) fn new(tickers: Vec<String>, cfg: GeneratorConfig) -> Self {
         let mut rng = rand::rng();
 
-        let states = tickers.into_iter()
+        let states = tickers
+            .into_iter()
             .map(|t| {
                 let start_price = rng.random_range(5000..50000);
 
-                (t, TickerState{price: start_price})
+                (t, TickerState { price: start_price })
             })
-            .collect::<HashMap<_,_>>();
+            .collect::<HashMap<_, _>>();
 
         let high_volume = ["AAPL", "MSFT", "TSLA"]
             .into_iter()
             .map(|s| s.to_string())
             .collect::<HashSet<_>>();
-        
+
         Self {
             cfg,
             states,
-            high_volume
+            high_volume,
         }
     }
 
@@ -67,7 +68,7 @@ impl QuoteGenerator {
         let delta = rng.random_range(-self.cfg.max_rel_step..self.cfg.max_rel_step);
 
         st.price = (((1.0 + delta) * (st.price as f64)).round() as i64).max(self.cfg.min_price);
-        
+
         // volume: популярные -> больше
         let volume = if self.high_volume.contains(ticker) {
             1000 + rng.random_range(0..5000)
@@ -90,7 +91,6 @@ impl QuoteGenerator {
 
     /// сгенерировать котировки для всех тикеров
     pub(crate) fn next_batch(&mut self) -> Vec<StockQuote> {
-
         let keys: Vec<String> = self.states.keys().cloned().collect();
 
         let mut out = Vec::with_capacity(keys.len());

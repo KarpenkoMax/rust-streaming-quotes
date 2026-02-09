@@ -79,7 +79,7 @@ pub mod error;
 
 /// Общие константы
 mod constants;
-pub use constants::{PING_TIMEOUT, PING_INTERVAL};
+pub use constants::{PING_INTERVAL, PING_TIMEOUT};
 
 // --- Re-exports (публичный фасад API) ---
 

@@ -1,15 +1,15 @@
 use std::net::{SocketAddr, UdpSocket};
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 use std::time::Duration;
 
-use log::{debug, warn, info};
+use log::{debug, info, warn};
 
+use crossbeam_channel::{Receiver, Sender, TrySendError};
 use quote_core::PING_INTERVAL;
-use quote_core::wire::{decode, encode_v1, UdpPacketV1};
-use crossbeam_channel::{Sender, Receiver, TrySendError};
+use quote_core::wire::{UdpPacketV1, decode, encode_v1};
 use std::thread;
 
 const TICK_RATE_MS: u64 = 200;
@@ -19,7 +19,8 @@ pub(crate) fn run_udp_receiver(
     shutdown: Arc<AtomicBool>,
 ) -> anyhow::Result<()> {
     let sock = UdpSocket::bind(bind_addr)?;
-    sock.set_read_timeout(Some(Duration::from_millis(TICK_RATE_MS))).ok();
+    sock.set_read_timeout(Some(Duration::from_millis(TICK_RATE_MS)))
+        .ok();
 
     // clone после bind, чтобы ping шёл с того же local port
     let ping_sock = sock.try_clone()?;
@@ -31,9 +32,9 @@ pub(crate) fn run_udp_receiver(
 
     let sd = shutdown.clone();
     let h = thread::spawn(move || {
-         if let Err(e) = run_ping(ping_sock, rx, PING_INTERVAL, sd) {
+        if let Err(e) = run_ping(ping_sock, rx, PING_INTERVAL, sd) {
             warn!("keep-alive error: {e}");
-         }
+        }
     });
 
     let result: anyhow::Result<()> = loop {
@@ -110,10 +111,9 @@ pub(crate) fn run_udp_receiver(
     result
 }
 
-
 fn handle_pkt(pkt: UdpPacketV1) {
     match pkt {
-        UdpPacketV1::Ping => {},
+        UdpPacketV1::Ping => {}
         UdpPacketV1::Quote(quote) => {
             info!("{}", quote);
         }

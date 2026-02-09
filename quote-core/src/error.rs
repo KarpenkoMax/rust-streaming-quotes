@@ -63,7 +63,7 @@ pub enum WireError {
     #[error("unsupported wire version: {0}")]
     UnsupportedWireVersion(u8),
 
-    /// Ошибка сериализации/десериализации 
+    /// Ошибка сериализации/десериализации
     #[error("postcard encode/decode error: {0}")]
     Postcard(#[from] postcard::Error),
 }

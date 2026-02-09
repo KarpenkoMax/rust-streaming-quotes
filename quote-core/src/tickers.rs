@@ -93,7 +93,10 @@ mod tests {
     fn normalize_line_supports_inline_comments_and_uppercase() {
         assert_eq!(normalize_line("aapl"), Some("AAPL".to_string()));
         assert_eq!(normalize_line("  aapl  "), Some("AAPL".to_string()));
-        assert_eq!(normalize_line("aapl # long comment"), Some("AAPL".to_string()));
+        assert_eq!(
+            normalize_line("aapl # long comment"),
+            Some("AAPL".to_string())
+        );
         assert_eq!(normalize_line("tsla#comment"), Some("TSLA".to_string()));
         assert_eq!(normalize_line("  tsla#comment  "), Some("TSLA".to_string()));
         assert_eq!(normalize_line("   # only comment after trim"), None);
@@ -146,7 +149,10 @@ AAPL
             .unwrap()
             .as_nanos();
         let mut path: PathBuf = std::env::temp_dir();
-        path.push(format!("quote_core_tickers_test_{nanos}_{}.txt", std::process::id()));
+        path.push(format!(
+            "quote_core_tickers_test_{nanos}_{}.txt",
+            std::process::id()
+        ));
 
         let input = "aapl\nmsft\n#comment\nAAPL\n";
         fs::write(&path, input).unwrap();

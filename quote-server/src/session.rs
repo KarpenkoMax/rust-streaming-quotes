@@ -1,13 +1,16 @@
+use crate::config::ClientId;
+use crate::config::{PING_TIMEOUT, UDP_SOCKET_TICK};
+use crate::udp_ping::LastPingMap;
 use crossbeam_channel::Receiver;
 use log::{info, warn};
 use quote_core::StockQuote;
-use crate::config::ClientId;
-use crate::config::{UDP_SOCKET_TICK, PING_TIMEOUT};
-use std::{net::UdpSocket, sync::{Arc, atomic::AtomicBool, atomic::Ordering}};
+use quote_core::wire::{UdpPacketV1, encode_v1};
 use std::collections::HashSet;
-use quote_core::wire::{ UdpPacketV1, encode_v1 };
-use crate::udp_ping::LastPingMap;
 use std::time::Instant;
+use std::{
+    net::UdpSocket,
+    sync::{Arc, atomic::AtomicBool, atomic::Ordering},
+};
 
 const BACK_TO_BACK_SEND_ERR_LIMIT: usize = 20;
 
@@ -20,12 +23,10 @@ pub(crate) fn run_session(
     last_ping: LastPingMap,
     shutdown: Arc<AtomicBool>,
 ) -> anyhow::Result<()> {
-
     let session_start = Instant::now();
     let mut back_to_back_err_count = 0;
 
     loop {
-
         if shutdown.load(Ordering::Relaxed) {
             info!("shutting down {cid} {udp_target}");
             break;
@@ -44,7 +45,7 @@ pub(crate) fn run_session(
                 q,
                 &tickers,
                 &mut back_to_back_err_count,
-                cid
+                cid,
             )?;
         }
         // ждём ещё одно сообщение + роль sleep
@@ -56,7 +57,7 @@ pub(crate) fn run_session(
                     q,
                     &tickers,
                     &mut back_to_back_err_count,
-                    cid
+                    cid,
                 )?;
             }
             Err(crossbeam_channel::RecvTimeoutError::Timeout) => {
@@ -64,7 +65,6 @@ pub(crate) fn run_session(
             }
             Err(crossbeam_channel::RecvTimeoutError::Disconnected) => break,
         }
-
     }
 
     let mut map = match last_ping.write() {
@@ -110,7 +110,11 @@ fn handle_quote(
     Ok(())
 }
 
-fn ping_expired(last_ping: &LastPingMap, target: std::net::SocketAddr, session_start: Instant) -> bool {
+fn ping_expired(
+    last_ping: &LastPingMap,
+    target: std::net::SocketAddr,
+    session_start: Instant,
+) -> bool {
     let last = {
         let map = match last_ping.read() {
             Ok(g) => g,
@@ -130,7 +134,7 @@ fn ping_expired(last_ping: &LastPingMap, target: std::net::SocketAddr, session_s
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quote_core::wire::{decode, UdpPacketV1};
+    use quote_core::wire::{UdpPacketV1, decode};
     use std::net::{SocketAddr, UdpSocket};
     use std::sync::RwLock;
     use std::time::{Duration, Instant};
@@ -166,8 +170,9 @@ mod tests {
             Arc::new(mk_quote("AAPL")),
             &tickers,
             &mut err_count,
-            cid
-        ).unwrap();
+            cid,
+        )
+        .unwrap();
         assert_eq!(err_count, 0);
 
         let mut buf = [0u8; 2048];
@@ -202,8 +207,9 @@ mod tests {
             Arc::new(mk_quote("AAPL")),
             &tickers,
             &mut err_count,
-            cid
-        ).unwrap();
+            cid,
+        )
+        .unwrap();
 
         let mut buf = [0u8; 2048];
         let res = recv_sock.recv_from(&mut buf);
@@ -230,7 +236,7 @@ mod tests {
                 Arc::new(mk_quote("AAPL")),
                 &tickers,
                 &mut err_count,
-                cid
+                cid,
             );
             assert!(r.is_ok());
         }
@@ -241,7 +247,7 @@ mod tests {
             Arc::new(mk_quote("AAPL")),
             &tickers,
             &mut err_count,
-            cid
+            cid,
         );
         assert!(r.is_err());
     }
@@ -259,7 +265,10 @@ mod tests {
         let last_ping: LastPingMap = Arc::new(RwLock::new(std::collections::HashMap::new()));
         {
             let mut map = last_ping.write().unwrap();
-            map.insert(udp_target, Instant::now() - PING_TIMEOUT - Duration::from_millis(1));
+            map.insert(
+                udp_target,
+                Instant::now() - PING_TIMEOUT - Duration::from_millis(1),
+            );
         }
 
         run_session(

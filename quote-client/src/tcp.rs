@@ -1,7 +1,7 @@
-use std::io::{BufRead, BufReader, Write};
-use std::net::{TcpStream, SocketAddr};
-use std::time::Duration;
 use quote_core::protocol::format_stream_command_line;
+use std::io::{BufRead, BufReader, Write};
+use std::net::{SocketAddr, TcpStream};
+use std::time::Duration;
 
 const TCP_READ_TIMEOUT_S: u64 = 5;
 const TCP_WRITE_TIMEOUT_S: u64 = 5;
@@ -9,14 +9,17 @@ const TCP_WRITE_TIMEOUT_S: u64 = 5;
 pub(crate) fn send_stream_command(
     server_tcp_addr: SocketAddr,
     udp_target: SocketAddr,
-    tickers: &[String]
+    tickers: &[String],
 ) -> anyhow::Result<()> {
-
     let mut stream = TcpStream::connect(server_tcp_addr)?;
 
     stream.set_nodelay(true).ok();
-    stream.set_read_timeout(Some(Duration::from_secs(TCP_READ_TIMEOUT_S))).ok();
-    stream.set_write_timeout(Some(Duration::from_secs(TCP_WRITE_TIMEOUT_S))).ok();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(TCP_READ_TIMEOUT_S)))
+        .ok();
+    stream
+        .set_write_timeout(Some(Duration::from_secs(TCP_WRITE_TIMEOUT_S)))
+        .ok();
 
     // отправляем команду
     let cmd = format_stream_command_line(udp_target, tickers);

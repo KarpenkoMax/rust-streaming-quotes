@@ -1,5 +1,5 @@
-use std::fmt;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// структура с данными по акциям для одного тикера
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

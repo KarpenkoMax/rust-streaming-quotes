@@ -1,15 +1,15 @@
-use std::collections::{HashSet};
-use std::sync::{ Arc, atomic::AtomicBool, atomic::AtomicU64, atomic::Ordering };
-use std::net::{ UdpSocket, SocketAddr, TcpListener, TcpStream };
-use log::{info, warn};
-use anyhow::Context;
-use std::time::Duration;
-use std::thread;
-use crate::udp_ping::LastPingMap;
 use crate::hub::Hub;
 use crate::session::run_session;
-use quote_core::protocol::{ parse_command, Command };
+use crate::udp_ping::LastPingMap;
+use anyhow::Context;
+use log::{info, warn};
+use quote_core::protocol::{Command, parse_command};
+use std::collections::HashSet;
 use std::io::{BufRead, BufReader, Write};
+use std::net::{SocketAddr, TcpListener, TcpStream, UdpSocket};
+use std::sync::{Arc, atomic::AtomicBool, atomic::AtomicU64, atomic::Ordering};
+use std::thread;
+use std::time::Duration;
 
 const TCP_READ_TIMEOUT_S: u64 = 5;
 const TCP_WRITE_TIMEOUT_S: u64 = 5;
@@ -23,14 +23,13 @@ pub(crate) fn run_tcp_listener(
     last_ping: LastPingMap,
     shutdown: Arc<AtomicBool>,
 ) -> anyhow::Result<()> {
-
-    let listener = TcpListener::bind(tcp_addr)
-        .with_context(|| format!("bind TCP listener {}", tcp_addr))?;
+    let listener =
+        TcpListener::bind(tcp_addr).with_context(|| format!("bind TCP listener {}", tcp_addr))?;
     listener
         .set_nonblocking(true)
         .context("listener.set_nonblocking(true)")?;
     let mut session_handles = Vec::new();
-    
+
     loop {
         reap_finished_sessions(&mut session_handles);
 
@@ -46,8 +45,12 @@ pub(crate) fn run_tcp_listener(
                     .context("stream.set_nonblocking(false)")?;
 
                 stream.set_nodelay(true).ok();
-                stream.set_read_timeout(Some(Duration::from_secs(TCP_READ_TIMEOUT_S))).ok();
-                stream.set_write_timeout(Some(Duration::from_secs(TCP_WRITE_TIMEOUT_S))).ok();
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(TCP_READ_TIMEOUT_S)))
+                    .ok();
+                stream
+                    .set_write_timeout(Some(Duration::from_secs(TCP_WRITE_TIMEOUT_S)))
+                    .ok();
 
                 let hub = hub.clone();
                 let udp = udp.clone();
@@ -56,7 +59,9 @@ pub(crate) fn run_tcp_listener(
                 let shutdown = shutdown.clone();
 
                 let h = thread::spawn(move || {
-                    if let Err(e) = handle_conn(stream, hub, curr_client_id, udp, last_ping, shutdown) {
+                    if let Err(e) =
+                        handle_conn(stream, hub, curr_client_id, udp, last_ping, shutdown)
+                    {
                         warn!("handle_conn error: {e}");
                     }
                 });
@@ -118,7 +123,6 @@ fn handle_conn(
     last_ping: LastPingMap,
     shutdown: Arc<AtomicBool>,
 ) -> anyhow::Result<()> {
-
     // парсинг команды
     let cmd = match extract_command(&mut stream) {
         Ok(c) => c,
@@ -130,7 +134,10 @@ fn handle_conn(
     };
 
     match cmd {
-        Command::Stream { udp_target, tickers } => {
+        Command::Stream {
+            udp_target,
+            tickers,
+        } => {
             let cid = curr_client_id.fetch_add(1, Ordering::Relaxed);
 
             let rx = match hub.add_client(cid) {
@@ -172,8 +179,8 @@ mod tests {
     use std::io::{Read, Write};
     use std::net::{TcpListener, TcpStream, UdpSocket};
     use std::sync::{
-        atomic::{AtomicBool, AtomicU64},
         Arc, RwLock,
+        atomic::{AtomicBool, AtomicU64},
     };
     use std::time::Duration;
 
@@ -214,7 +221,10 @@ mod tests {
             reply.starts_with("ERR "),
             "expected ERR reply, got: {reply:?}"
         );
-        assert!(reply.ends_with('\n'), "reply must end with newline: {reply:?}");
+        assert!(
+            reply.ends_with('\n'),
+            "reply must end with newline: {reply:?}"
+        );
     }
 
     #[test]
