@@ -6,14 +6,14 @@ edition = "2024"
 [dependencies]
 quote-core = { path = "../quote-core" }
 
+clap = { workspace = true }
+
 rand = { workspace = true }
 crossbeam-channel = { workspace = true }
 
+thiserror = { workspace = true }
 anyhow = { workspace = true }
 ctrlc = { workspace = true }
 
 log = { workspace = true }
 env_logger = { workspace = true }
-
-serde = { workspace = true }
-postcard = { workspace = true }

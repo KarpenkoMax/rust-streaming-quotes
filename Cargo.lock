@@ -435,12 +435,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
+ "crossbeam-channel",
  "ctrlc",
  "env_logger",
  "log",
- "postcard",
  "quote-core",
- "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -457,14 +457,14 @@ name = "quote-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clap",
  "crossbeam-channel",
  "ctrlc",
  "env_logger",
  "log",
- "postcard",
  "quote-core",
  "rand",
- "serde",
+ "thiserror",
 ]
 
 [[package]]
